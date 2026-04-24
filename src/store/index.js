@@ -442,7 +442,16 @@ export const useCollectibleStore = create((set) => ({
   fetchCollectibles: async () => {
     try {
       const response = await api.get("/collectibles");
-      set({ collectibles: response.data.data });
+      const fetched = response.data.data;
+      const seenKey = "phi_seen_collectibles";
+      const seen = new Set(JSON.parse(localStorage.getItem(seenKey) || "[]"));
+      const brandNew = fetched.find(c => !seen.has(c.id));
+      if (brandNew) {
+        set({ collectibles: fetched, newCollectible: brandNew });
+      } else {
+        set({ collectibles: fetched });
+      }
+      localStorage.setItem(seenKey, JSON.stringify(fetched.map(c => c.id)));
     } catch {}
   },
 
@@ -452,7 +461,6 @@ export const useCollectibleStore = create((set) => ({
       const collectible = response.data.data;
       if (collectible) {
         set((s) => ({ collectibles: [...s.collectibles, collectible], newCollectible: collectible }));
-        setTimeout(() => set({ newCollectible: null }), 5000);
       }
       return collectible;
     } catch {}
@@ -564,14 +572,29 @@ export const useSocialStore = create((set, get) => ({
 export const useChatStore = create((set, get) => ({
   conversations: {},
   activeChat: null,
+  incomingToast: null,
 
-  openChat: (friendId) => set({ activeChat: friendId }),
+  openChat: (friendId) => set({ activeChat: friendId, incomingToast: null }),
   closeChat: () => set({ activeChat: null }),
+  clearToast: () => set({ incomingToast: null }),
 
   fetchConversation: async (friendId) => {
     try {
       const res = await api.get(`/social/messages/${friendId}`);
-      set((s) => ({ conversations: { ...s.conversations, [friendId]: res.data.data } }));
+      const newMsgs = res.data.data;
+      const prev = get().conversations[friendId] || [];
+      const activeChat = get().activeChat;
+
+      if (newMsgs.length > prev.length && activeChat !== friendId) {
+        const latest = newMsgs[newMsgs.length - 1];
+        if (latest && latest.sender_id === friendId) {
+          const friend = useSocialStore.getState().friends.find(f => f.id === friendId);
+          set({ incomingToast: { friendId, senderName: friend?.callsign || friend?.username || "Someone", content: latest.content, ts: Date.now() } });
+          setTimeout(() => set((s) => s.incomingToast?.friendId === friendId ? { incomingToast: null } : s), 5000);
+        }
+      }
+
+      set((s) => ({ conversations: { ...s.conversations, [friendId]: newMsgs } }));
       useSocialStore.setState((s) => {
         const counts = { ...s.unreadCounts };
         delete counts[friendId];
@@ -641,4 +664,44 @@ export const useStudySessionStore = create((set) => ({
   },
 
   leaveSession: () => set({ currentSession: null }),
+}));
+
+const REMINDERS_KEY = "phi_reminders";
+
+function loadReminders() {
+  try { return JSON.parse(localStorage.getItem(REMINDERS_KEY) || "[]"); } catch { return []; }
+}
+
+function saveReminders(list) {
+  localStorage.setItem(REMINDERS_KEY, JSON.stringify(list));
+}
+
+export const useReminderStore = create((set, get) => ({
+  reminders: loadReminders(),
+
+  addReminder: (label, time) => {
+    const reminder = { id: Date.now().toString(), label, time, fired: false };
+    const updated = [...get().reminders, reminder];
+    saveReminders(updated);
+    set({ reminders: updated });
+    return reminder;
+  },
+
+  removeReminder: (id) => {
+    const updated = get().reminders.filter(r => r.id !== id);
+    saveReminders(updated);
+    set({ reminders: updated });
+  },
+
+  markFired: (id) => {
+    const updated = get().reminders.map(r => r.id === id ? { ...r, fired: true } : r);
+    saveReminders(updated);
+    set({ reminders: updated });
+  },
+
+  clearFired: () => {
+    const updated = get().reminders.filter(r => !r.fired);
+    saveReminders(updated);
+    set({ reminders: updated });
+  },
 }));

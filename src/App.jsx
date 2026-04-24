@@ -5,6 +5,7 @@ import { useAuthStore } from "./store/index.js";
 import { Navigation, ProtectedRoute } from "./components/Layout.jsx";
 import { CollectibleToast } from "./components/CollectibleToast.jsx";
 import { ChatWindow } from "./components/social/ChatWindow.jsx";
+import { ChatToast, ReminderManager } from "./components/GlobalOverlays.jsx";
 
 const LoginPage = lazy(() => import("./pages/AuthPages.jsx").then(m => ({ default: m.LoginPage })));
 const SignupPage = lazy(() => import("./pages/AuthPages.jsx").then(m => ({ default: m.SignupPage })));
@@ -45,6 +46,8 @@ function App() {
         <Suspense fallback={<Loader />}>
           <CollectibleToast />
           <ChatWindow />
+          {token && <ChatToast />}
+          {token && <ReminderManager />}
           <Routes>
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <LoginPage />} />
             <Route path="/signup" element={token ? <Navigate to="/dashboard" /> : <SignupPage />} />
