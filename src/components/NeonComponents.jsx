@@ -57,7 +57,9 @@ export function NeonCard({ children, className = "", glowing = false, variant = 
       className={`
         bg-neon-dark/80 backdrop-blur-sm border rounded-lg p-5
         ${variants[variant]}
-        ${glowing ? "shadow-[0_0_20px_rgba(255,0,128,0.3),0_0_40px_rgba(0,234,255,0.1)]" : "shadow-lg"}
+        ${glowing
+          ? "shadow-[0_0_20px_rgba(255,0,128,0.25),0_0_40px_rgba(138,43,226,0.15),0_0_60px_rgba(0,234,255,0.08)]"
+          : "shadow-[0_4px_24px_rgba(0,0,0,0.4)]"}
         ${className}
       `}
     >
@@ -94,7 +96,8 @@ export function NeonInput({ placeholder, value, onChange, type = "text", classNa
 export function GlitchText({ text, className = "" }) {
   return (
     <span className={`relative inline-block font-cyber animate-flicker ${className}`}>
-      <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-blue to-neon-purple neon-text-pink">
+      <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-neon-blue to-neon-purple"
+        style={{ filter: "drop-shadow(0 0 8px rgba(255,0,128,0.5))" }}>
         {text}
       </span>
     </span>
@@ -110,7 +113,7 @@ export function CircleProgress({ percentage, size = 120, strokeWidth = 6, childr
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="absolute inset-0 -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="#1a1a2e" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="#1a0a2e" strokeWidth={strokeWidth} />
         <circle
           cx={size / 2} cy={size / 2} r={radius}
           fill="transparent"
@@ -134,28 +137,11 @@ export function CircleProgress({ percentage, size = 120, strokeWidth = 6, childr
 }
 
 export function GridBg() {
-  return (
-    <div
-      className="fixed inset-0 pointer-events-none"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(0,234,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,234,255,0.03) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
-      }}
-    />
-  );
+  return <div className="grid-bg" />;
 }
 
 export function ScanlineOverlay() {
-  return (
-    <div
-      className="fixed inset-0 pointer-events-none z-50"
-      style={{
-        background:
-          "repeating-linear-gradient(0deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 1px, transparent 1px, transparent 2px)",
-      }}
-    />
-  );
+  return <div className="scanline-overlay" />;
 }
 
 export function Terminal({ children, title = "TERMINAL" }) {

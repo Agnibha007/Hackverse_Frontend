@@ -40,6 +40,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-neon-black text-white overflow-x-hidden">
+        <div className="horizon-glow" />
         {token && <Navigation />}
         <Suspense fallback={<Loader />}>
           <CollectibleToast />

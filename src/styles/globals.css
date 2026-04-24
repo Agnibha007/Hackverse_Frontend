@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -17,11 +17,14 @@ html, body {
 }
 
 body {
-  background-color: #0a0a0f;
+  background-color: #0d0015;
   color: #ffffff;
-  font-family: 'Courier New', monospace;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(138,43,226,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 30% at 50% 0%, rgba(255,0,128,0.06) 0%, transparent 60%);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -31,21 +34,33 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 button, input, textarea, select {
-  font-family: 'Courier New', monospace;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #1a1a2e; }
-::-webkit-scrollbar-thumb { background: #ff0080; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #0d0015; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff0080, #8a2be2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #00eaff; }
 
-::selection { background-color: #ff0080; color: #fff; }
+::selection { background-color: rgba(255,0,128,0.4); color: #fff; }
 :focus-visible { outline: 2px solid #00eaff; outline-offset: 2px; }
 html { scroll-behavior: smooth; }
 
+/* ── Animations ─────────────────────────────────────── */
+
 @keyframes glow {
-  0%, 100% { text-shadow: 0 0 10px rgba(255,0,128,0.5), 0 0 20px rgba(255,0,128,0.3); }
-  50%       { text-shadow: 0 0 20px rgba(255,0,128,0.8), 0 0 40px rgba(255,0,128,0.5); }
+  0%, 100% {
+    text-shadow:
+      0 0 8px rgba(255,0,128,0.7),
+      0 0 20px rgba(255,0,128,0.4),
+      0 0 40px rgba(138,43,226,0.2);
+  }
+  50% {
+    text-shadow:
+      0 0 16px rgba(255,0,128,1),
+      0 0 40px rgba(255,0,128,0.6),
+      0 0 80px rgba(138,43,226,0.4);
+  }
 }
 
 @keyframes flicker {
@@ -77,10 +92,22 @@ html { scroll-behavior: smooth; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-glow    { animation: glow 2s ease-in-out infinite; }
-.animate-flicker { animation: flicker 4s ease-in-out infinite; }
-.animate-float   { animation: float 3s ease-in-out infinite; }
+@keyframes sun-pulse {
+  0%, 100% { opacity: 0.7; transform: scaleX(1); }
+  50%       { opacity: 1;   transform: scaleX(1.02); }
+}
+
+@keyframes horizon-glow {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+.animate-glow     { animation: glow 2s ease-in-out infinite; }
+.animate-flicker  { animation: flicker 4s ease-in-out infinite; }
+.animate-float    { animation: float 3s ease-in-out infinite; }
 .animate-slide-in { animation: slide-in 0.3s ease-out forwards; }
+
+/* ── Scanlines — slightly more visible ──────────────── */
 
 .scanline-overlay {
   position: fixed;
@@ -89,21 +116,84 @@ html { scroll-behavior: smooth; }
   z-index: 9999;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0,0,0,0.03),
-    rgba(0,0,0,0.03) 1px,
+    rgba(0,0,0,0.06),
+    rgba(0,0,0,0.06) 1px,
     transparent 1px,
-    transparent 2px
+    transparent 3px
   );
 }
 
+/* ── Grid — flat top, perspective bottom ────────────── */
+
 .grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(0,234,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,234,255,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(0,234,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,234,255,0.05) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-.neon-border-pink  { box-shadow: 0 0 8px rgba(255,0,128,0.6), inset 0 0 8px rgba(255,0,128,0.1); }
-.neon-border-blue  { box-shadow: 0 0 8px rgba(0,234,255,0.6), inset 0 0 8px rgba(0,234,255,0.1); }
-.neon-text-pink    { text-shadow: 0 0 10px rgba(255,0,128,0.8); }
-.neon-text-blue    { text-shadow: 0 0 10px rgba(0,234,255,0.8); }
+/* Perspective floor grid — the synthwave signature */
+.grid-bg::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -50%;
+  right: -50%;
+  height: 45%;
+  background-image:
+    linear-gradient(rgba(138,43,226,0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,128,0.12) 1px, transparent 1px);
+  background-size: 60px 40px;
+  transform: perspective(400px) rotateX(60deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+/* ── Synthwave horizon glow ─────────────────────────── */
+
+.horizon-glow {
+  position: fixed;
+  bottom: 40%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,0,128,0.3) 20%,
+    rgba(255,100,0,0.6) 40%,
+    rgba(255,200,0,0.4) 50%,
+    rgba(255,100,0,0.6) 60%,
+    rgba(255,0,128,0.3) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: horizon-glow 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* ── Neon utilities ─────────────────────────────────── */
+
+.neon-border-pink   { box-shadow: 0 0 8px rgba(255,0,128,0.6), inset 0 0 8px rgba(255,0,128,0.1); }
+.neon-border-blue   { box-shadow: 0 0 8px rgba(0,234,255,0.6), inset 0 0 8px rgba(0,234,255,0.1); }
+.neon-text-pink     { text-shadow: 0 0 10px rgba(255,0,128,0.8), 0 0 20px rgba(255,0,128,0.4); }
+.neon-text-blue     { text-shadow: 0 0 10px rgba(0,234,255,0.8), 0 0 20px rgba(0,234,255,0.4); }
+
+/* Chrome/gradient text for major headings */
+.text-synthwave {
+  background: linear-gradient(135deg, #ff0080 0%, #ff6ec7 30%, #00eaff 60%, #8a2be2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(255,0,128,0.4));
+}
