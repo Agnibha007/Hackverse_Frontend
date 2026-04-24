@@ -460,3 +460,185 @@ export const useCollectibleStore = create((set) => ({
 
   clearNew: () => set({ newCollectible: null }),
 }));
+
+export const useSocialStore = create((set, get) => ({
+  friends: [],
+  pendingRequests: [],
+  sentRequests: [],
+  searchResults: [],
+  unreadCounts: {},
+  friendSessions: [],
+  leaderboard: [],
+  isLoading: false,
+
+  fetchFriends: async () => {
+    try {
+      const res = await api.get("/social/friends");
+      set({ friends: res.data.data });
+    } catch {}
+  },
+
+  fetchPendingRequests: async () => {
+    try {
+      const res = await api.get("/social/friends/requests/pending");
+      set({ pendingRequests: res.data.data });
+    } catch {}
+  },
+
+  fetchSentRequests: async () => {
+    try {
+      const res = await api.get("/social/friends/requests/sent");
+      set({ sentRequests: res.data.data });
+    } catch {}
+  },
+
+  searchUsers: async (query) => {
+    if (!query || query.length < 2) { set({ searchResults: [] }); return; }
+    try {
+      const res = await api.get(`/social/users/search?q=${encodeURIComponent(query)}`);
+      set({ searchResults: res.data.data });
+    } catch {}
+  },
+
+  sendFriendRequest: async (userId) => {
+    try {
+      await api.post("/social/friends/request", { userId });
+      get().searchUsers("");
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+
+  respondToRequest: async (requestId, action) => {
+    try {
+      await api.patch(`/social/friends/requests/${requestId}`, { action });
+      get().fetchPendingRequests();
+      get().fetchFriends();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+
+  removeFriend: async (friendId) => {
+    try {
+      await api.delete(`/social/friends/${friendId}`);
+      set((s) => ({ friends: s.friends.filter(f => f.id !== friendId) }));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+
+  updatePresence: async (status, studying_subject) => {
+    try {
+      await api.post("/social/presence", { status, studying_subject });
+    } catch {}
+  },
+
+  fetchUnreadCounts: async () => {
+    try {
+      const res = await api.get("/social/messages/unread");
+      const counts = {};
+      res.data.data.forEach(r => { counts[r.sender_id] = parseInt(r.count); });
+      set({ unreadCounts: counts });
+    } catch {}
+  },
+
+  fetchFriendSessions: async () => {
+    try {
+      const res = await api.get("/social/sessions/friends");
+      set({ friendSessions: res.data.data });
+    } catch {}
+  },
+
+  fetchLeaderboard: async () => {
+    try {
+      const res = await api.get("/social/leaderboard");
+      set({ leaderboard: res.data.data });
+    } catch {}
+  },
+}));
+
+export const useChatStore = create((set, get) => ({
+  conversations: {},
+  activeChat: null,
+
+  openChat: (friendId) => set({ activeChat: friendId }),
+  closeChat: () => set({ activeChat: null }),
+
+  fetchConversation: async (friendId) => {
+    try {
+      const res = await api.get(`/social/messages/${friendId}`);
+      set((s) => ({ conversations: { ...s.conversations, [friendId]: res.data.data } }));
+      useSocialStore.setState((s) => {
+        const counts = { ...s.unreadCounts };
+        delete counts[friendId];
+        return { unreadCounts: counts };
+      });
+    } catch {}
+  },
+
+  sendMessage: async (receiverId, content) => {
+    try {
+      const res = await api.post("/social/messages", { receiverId, content });
+      const msg = res.data.data;
+      set((s) => ({
+        conversations: {
+          ...s.conversations,
+          [receiverId]: [...(s.conversations[receiverId] || []), msg],
+        },
+      }));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+}));
+
+export const useStudySessionStore = create((set) => ({
+  currentSession: null,
+  isLoading: false,
+
+  createSession: async (subject, durationMinutes) => {
+    set({ isLoading: true });
+    try {
+      const res = await api.post("/social/sessions", { subject, duration_minutes: durationMinutes });
+      set({ currentSession: res.data.data, isLoading: false });
+      return { success: true, session: res.data.data };
+    } catch (err) {
+      set({ isLoading: false });
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+
+  joinSession: async (sessionId) => {
+    set({ isLoading: true });
+    try {
+      const res = await api.post(`/social/sessions/${sessionId}/join`);
+      set({ currentSession: res.data.data, isLoading: false });
+      return { success: true, session: res.data.data };
+    } catch (err) {
+      set({ isLoading: false });
+      return { success: false, error: err.response?.data?.error };
+    }
+  },
+
+  refreshSession: async (sessionId) => {
+    try {
+      const res = await api.get(`/social/sessions/${sessionId}`);
+      set({ currentSession: res.data.data });
+    } catch {}
+  },
+
+  endSession: async (sessionId) => {
+    try {
+      await api.post(`/social/sessions/${sessionId}/end`);
+      set({ currentSession: null });
+      useSocialStore.getState().updatePresence("online");
+    } catch {}
+  },
+
+  leaveSession: () => set({ currentSession: null }),
+}));

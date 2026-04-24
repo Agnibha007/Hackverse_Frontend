@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/index.js";
 import { Navigation, ProtectedRoute } from "./components/Layout.jsx";
 import { CollectibleToast } from "./components/CollectibleToast.jsx";
+import { ChatWindow } from "./components/social/ChatWindow.jsx";
 
 const LoginPage = lazy(() => import("./pages/AuthPages.jsx").then(m => ({ default: m.LoginPage })));
 const SignupPage = lazy(() => import("./pages/AuthPages.jsx").then(m => ({ default: m.SignupPage })));
@@ -13,6 +14,7 @@ const AnalyticsPage = lazy(() => import("./pages/FocusAndAnalyticsPages.jsx").th
 const SubjectsPage = lazy(() => import("./pages/SubjectsPage.jsx").then(m => ({ default: m.SubjectsPage })));
 const AiMentorPage = lazy(() => import("./pages/AiMentorPage.jsx").then(m => ({ default: m.AiMentorPage })));
 const CollectiblesPage = lazy(() => import("./pages/CollectiblesPage.jsx").then(m => ({ default: m.CollectiblesPage })));
+const SocialPage = lazy(() => import("./pages/SocialPage.jsx").then(m => ({ default: m.SocialPage })));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage.jsx"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage.jsx"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage.jsx"));
@@ -41,6 +43,7 @@ function App() {
         {token && <Navigation />}
         <Suspense fallback={<Loader />}>
           <CollectibleToast />
+          <ChatWindow />
           <Routes>
             <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <LoginPage />} />
             <Route path="/signup" element={token ? <Navigate to="/dashboard" /> : <SignupPage />} />
@@ -59,6 +62,7 @@ function App() {
             <Route path="/subjects" element={<ProtectedRoute><SubjectsPage /></ProtectedRoute>} />
             <Route path="/ai" element={<ProtectedRoute><AiMentorPage /></ProtectedRoute>} />
             <Route path="/collectibles" element={<ProtectedRoute><CollectiblesPage /></ProtectedRoute>} />
+            <Route path="/social" element={<ProtectedRoute><SocialPage /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
             <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
           </Routes>

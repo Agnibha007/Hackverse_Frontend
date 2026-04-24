@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { useAuthStore } from "../store/index.js";
-import { LayoutDashboard, Crosshair, BarChart3, LogOut, Zap, Pencil, Trash2, X, AlertTriangle, BookOpen, Bot, Gift } from "lucide-react";
+import { LayoutDashboard, Crosshair, BarChart3, LogOut, Zap, Pencil, Trash2, X, AlertTriangle, BookOpen, Bot, Gift, Users } from "lucide-react";
 
 const navLinks = [
   { to: "/dashboard",    label: "Command",      icon: LayoutDashboard },
   { to: "/focus",        label: "Focus",        icon: Crosshair },
   { to: "/subjects",     label: "Subjects",     icon: BookOpen },
   { to: "/analytics",   label: "Stats",        icon: BarChart3 },
+  { to: "/social",      label: "Squad",        icon: Users },
   { to: "/ai",          label: "aria.ai",      icon: Bot },
   { to: "/collectibles", label: "Drops",        icon: Gift },
 ];
